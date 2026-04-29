@@ -32,3 +32,19 @@ class LeafNode(HTMLNode):
         else:
             return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
         
+class ParentNode(HTMLNode):
+    def __init__(self, tag: str, children: list["HTMLNode"], props: dict = None):
+        super().__init__(tag = tag, children = children, props = props)
+
+    def __repr__(self):
+        return f"ParentNode({self.tag}, children: {self.children}, {self.props})"
+    
+    def to_html(self):
+        if self.tag is None:
+            raise ValueError("Unexpected None tag! All ParentNode instances must have a tag!")
+        if self.children is None:
+            raise ValueError("Unexpected None children! All ParentNode instances must have children!")
+        else:
+            children_string = "".join([child.to_html() for child in self.children])
+            return f"<{self.tag}{self.props_to_html()}>{children_string}</{self.tag}>"
+        

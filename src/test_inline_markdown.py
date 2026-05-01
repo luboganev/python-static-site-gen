@@ -36,7 +36,7 @@ class TestSplitNodesDelimiter(unittest.TestCase):
         node = TextNode(text = "This is text with a `code block word", text_type = TextType.TEXT)
         with self.assertRaises(Exception) as ctx:
             split_nodes_delimiter(old_nodes = [node], delimiter = "`", text_type = TextType.CODE)
-        self.assertIn("Odd number of delimiters in the text", str(ctx.exception))
+        self.assertIn("invalid markdown, formatted section not closed", str(ctx.exception))
 
     def test_pass_on_non_text_nodes(self):
         expected = [

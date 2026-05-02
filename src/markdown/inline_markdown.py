@@ -1,5 +1,5 @@
 from typing import Callable
-from textnode import TextNode, TextType
+from domain.textnode import TextNode, TextType
 import re
 
 def extract_markdown_images(text: str) -> tuple[str, str]:

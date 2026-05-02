@@ -1,4 +1,4 @@
-from blocknode import BlockType
+from domain.blocknode import BlockType
 
 
 def markdown_to_blocks(markdown: str) -> list[str]:

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import Enum
 
 from domain.textnode import TextNode
@@ -11,15 +12,45 @@ class BlockType(Enum):
     ULIST = "ulist"
     OLIST = "olist"
 
-class BlockNode():
-    def __init__(self, text: str, block_type: BlockType):
-        self.text = text
-        self.block_type = block_type
+class BlockNode:
+    """Base class — maybe abstract."""
+    pass
 
-    def __eq__(self, value):
-        if self.text != value.text: return False
-        if self.block_type != value.block_type: return False
-        return True
-    
-    def __repr__(self):
-        return f"BlockNode({self.text}, {self.block_type.value})"
+@dataclass
+class ParagraphBlock(BlockNode):
+    children: list[TextNode]
+
+    def __init__(self, children: list[TextNode]):
+        self.children = children
+
+@dataclass
+class HeadingBlock(BlockNode):
+    level: int
+    children: list[TextNode]
+
+    def __init__(self, level: int, children: list[TextNode]):
+        self.level = level
+        self.children = children
+
+@dataclass
+class CodeBlock(BlockNode):
+    text: str
+
+    def __init__(self, text: str):
+        self.text = text
+
+@dataclass
+class QuoteBlock(BlockNode):
+    children: list[TextNode]
+
+    def __init__(self, children: list[TextNode]):
+        self.children = children
+
+@dataclass
+class ListBlock(BlockNode):
+    ordered: bool
+    items: list[list[TextNode]]
+
+    def __init__(self, ordered: bool, items: list[list[TextNode]]):
+        self.ordered = ordered
+        self.items = items

@@ -1,4 +1,5 @@
-from domain.blocknode import BlockType
+from domain.blocknode import BlockNode, BlockType, CodeBlock, HeadingBlock, ListBlock, QuoteBlock
+from markdown.inline_markdown import text_to_textnodes
 
 
 def markdown_to_blocks(markdown: str) -> list[str]:
@@ -31,3 +32,45 @@ def block_to_block_type(block):
             i += 1
         return BlockType.OLIST
     return BlockType.PARAGRAPH
+
+def markdown_to_block_nodes(markdown: str) -> list[BlockNode]:
+    nodes = []
+    for raw in markdown_to_blocks(markdown):
+        block_type = block_to_block_type(raw)
+        nodes.append(_build_block_node(raw, block_type))
+    return nodes
+
+def _build_block_node(raw: str, block_type: BlockType) -> BlockNode:
+    match block_type:
+        case BlockType.HEADING:
+            return _parse_heading(text = raw)
+        case BlockType.CODE:
+            return _parse_code(text = raw)
+        case BlockType.QUOTE:
+            return _parse_quote(text = raw)
+        case BlockType.ULIST:
+            return _parse_list(text = raw)
+        case BlockType.OLIST:
+            return _parse_quote(text = raw, ordered = True)
+        
+def _parse_heading(text: str) -> HeadingBlock:
+    level = 0
+    for char in text:
+        if char == "#":
+            level += 1
+        else:
+            break
+    text = text[level + 1 :]
+    return HeadingBlock(
+        level = level,
+        children = text_to_textnodes(text = text)
+    )
+
+def _parse_code(text: str) -> CodeBlock:
+    raise NotImplementedError
+
+def _parse_quote(text: str) -> QuoteBlock:
+    raise NotImplementedError
+
+def _parse_list(text: str, ordered: bool = False) -> ListBlock:
+    raise NotImplementedError

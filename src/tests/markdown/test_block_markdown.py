@@ -1,8 +1,8 @@
 import unittest
 
 from domain.textnode import TextNode, TextType
-from markdown.block_markdown import _parse_code, _parse_heading, block_to_block_type, markdown_to_blocks
-from domain.blocknode import BlockType, CodeBlock, HeadingBlock
+from markdown.block_markdown import _parse_code, _parse_heading, _parse_quote, block_to_block_type, markdown_to_blocks
+from domain.blocknode import BlockType, CodeBlock, HeadingBlock, QuoteBlock
 
 class TestMarkdownToBlock(unittest.TestCase):
     def test_markdown_to_blocks(self):
@@ -215,7 +215,60 @@ class TestParseToBlockNode(unittest.TestCase):
                 self.assertEqual(_parse_code(raw), expected)
 
     def test_quote(self):
-        raise NotImplementedError
+        cases = [
+            (
+                "single line quote",
+                "> hello world",
+                QuoteBlock(children=[
+                    TextNode("hello world", TextType.TEXT),
+                ]),
+            ),
+            (
+                "multi line quote",
+                "> first line\n> second line\n> third line",
+                QuoteBlock(children=[
+                    TextNode("first line", TextType.TEXT),
+                    TextNode("second line", TextType.TEXT),
+                    TextNode("third line", TextType.TEXT),
+                ]),
+            ),
+            (
+                "quote with inline bold on single line",
+                "> this is **bold** text",
+                QuoteBlock(children=[
+                    TextNode("this is ", TextType.TEXT),
+                    TextNode("bold", TextType.BOLD),
+                    TextNode(" text", TextType.TEXT),
+                ]),
+            ),
+            (
+                "each line parses inline independently",
+                "> **bold one**\n> _italic two_",
+                QuoteBlock(children=[
+                    TextNode("bold one", TextType.BOLD),
+                    TextNode("italic two", TextType.ITALIC),
+                ]),
+            ),
+            (
+                "marker without space is tolerated",
+                ">no space after marker",
+                QuoteBlock(children=[
+                    TextNode("no space after marker", TextType.TEXT),
+                ]),
+            ),
+            (
+                "empty quote line in middle skipped",
+                "> first\n>\n> third",
+                QuoteBlock(children=[
+                    TextNode("first", TextType.TEXT),
+                    TextNode("third", TextType.TEXT),
+                ]),
+            ),
+        ]
+
+        for name, raw, expected in cases:
+            with self.subTest(name=name):
+                self.assertEqual(_parse_quote(raw), expected)
     
     def test_ulist(self):
         raise NotImplementedError

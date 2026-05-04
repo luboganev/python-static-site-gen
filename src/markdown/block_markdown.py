@@ -1,4 +1,5 @@
 from domain.blocknode import BlockNode, BlockType, CodeBlock, HeadingBlock, ListBlock, QuoteBlock
+from domain.textnode import TextNode
 from markdown.inline_markdown import text_to_textnodes
 
 
@@ -44,10 +45,10 @@ def _build_block_node(raw: str, block_type: BlockType) -> BlockNode:
     match block_type:
         case BlockType.HEADING:
             return _parse_heading(text = raw)
-        case BlockType.QUOTE:
-            return _parse_quote(text = raw)
         case BlockType.CODE:
             return _parse_code(text = raw)
+        case BlockType.QUOTE:
+            return _parse_quote(text = raw)
         case BlockType.ULIST:
             return _parse_list(text = raw)
         case BlockType.OLIST:
@@ -66,9 +67,6 @@ def _parse_heading(text: str) -> HeadingBlock:
         children = text_to_textnodes(text = text)
     )
 
-def _parse_quote(text: str) -> QuoteBlock:
-    raise NotImplementedError
-
 def _parse_code(text: str) -> CodeBlock:
     code_text = (
         text
@@ -77,6 +75,13 @@ def _parse_code(text: str) -> CodeBlock:
         .removesuffix("\n")
     )
     return CodeBlock(text = code_text)
+
+def _parse_quote(text: str) -> QuoteBlock:
+    lines = [x.removeprefix('>').removeprefix(' ') for x in text.split("\n")]
+    final_text_nodes: list['TextNode'] = []
+    for line in lines:
+        final_text_nodes.extend(text_to_textnodes(text = line))
+    return QuoteBlock(children = final_text_nodes)
 
 def _parse_list(text: str, ordered: bool = False) -> ListBlock:
     raise NotImplementedError

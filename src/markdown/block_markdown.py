@@ -44,10 +44,10 @@ def _build_block_node(raw: str, block_type: BlockType) -> BlockNode:
     match block_type:
         case BlockType.HEADING:
             return _parse_heading(text = raw)
-        case BlockType.CODE:
-            return _parse_code(text = raw)
         case BlockType.QUOTE:
             return _parse_quote(text = raw)
+        case BlockType.CODE:
+            return _parse_code(text = raw)
         case BlockType.ULIST:
             return _parse_list(text = raw)
         case BlockType.OLIST:
@@ -66,11 +66,17 @@ def _parse_heading(text: str) -> HeadingBlock:
         children = text_to_textnodes(text = text)
     )
 
-def _parse_code(text: str) -> CodeBlock:
-    raise NotImplementedError
-
 def _parse_quote(text: str) -> QuoteBlock:
     raise NotImplementedError
+
+def _parse_code(text: str) -> CodeBlock:
+    code_text = (
+        text
+        .removeprefix("```\n")
+        .removesuffix("```") # empty block will have only a single \n
+        .removesuffix("\n")
+    )
+    return CodeBlock(text = code_text)
 
 def _parse_list(text: str, ordered: bool = False) -> ListBlock:
     raise NotImplementedError

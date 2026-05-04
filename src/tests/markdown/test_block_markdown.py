@@ -1,8 +1,8 @@
 import unittest
 
 from domain.textnode import TextNode, TextType
-from markdown.block_markdown import _parse_heading, block_to_block_type, markdown_to_blocks
-from domain.blocknode import BlockType, HeadingBlock
+from markdown.block_markdown import _parse_code, _parse_heading, block_to_block_type, markdown_to_blocks
+from domain.blocknode import BlockType, CodeBlock, HeadingBlock
 
 class TestMarkdownToBlock(unittest.TestCase):
     def test_markdown_to_blocks(self):
@@ -145,11 +145,76 @@ class TestParseToBlockNode(unittest.TestCase):
                 _parse_heading(headings[i]),
                 expected[i],
             )
-
-    def test_quote(self):
-        raise NotImplementedError
     
     def test_code(self):
+        cases = [
+            (
+                "basic single line",
+                "```\nprint('hello')\n```",
+                CodeBlock(text="print('hello')"),
+            ),
+            (
+                "last newline preserved",
+                "```\nprint('hello')\n\n```",
+                CodeBlock(text="print('hello')\n"),
+            ),
+            (
+                "multi line",
+                "```\nline one\nline two\nline three\n```",
+                CodeBlock(text="line one\nline two\nline three"),
+            ),
+            (
+                "empty block",
+                "```\n```",
+                CodeBlock(text=""),
+            ),
+            (
+                "bold syntax stays literal",
+                "```\n**not bold**\n```",
+                CodeBlock(text="**not bold**"),
+            ),
+            (
+                "italic, code, link syntax stay literal",
+                "```\n_italic_ `code` [link](url)\n```",
+                CodeBlock(text="_italic_ `code` [link](url)"),
+            ),
+            (
+                "heading syntax stays literal",
+                "```\n# not a heading\n```",
+                CodeBlock(text="# not a heading"),
+            ),
+            (
+                "leading indentation preserved",
+                "```\n    indented four\n        indented eight\n```",
+                CodeBlock(text="    indented four\n        indented eight"),
+            ),
+            (
+                "blank lines inside preserved",
+                "```\nfirst\n\nthird\n```",
+                CodeBlock(text="first\n\nthird"),
+            ),
+            (
+                "trailing whitespace on lines preserved",
+                "```\ntrailing spaces   \nnext line\n```",
+                CodeBlock(text="trailing spaces   \nnext line"),
+            ),
+            (
+                "inline backticks survive",
+                "```\nuse `print()` to output\n```",
+                CodeBlock(text="use `print()` to output"),
+            ),
+            (
+                "kitchen sink of markdown syntax",
+                "```\n# Header\n**bold** and _italic_\n- list item\n> quote\n```",
+                CodeBlock(text="# Header\n**bold** and _italic_\n- list item\n> quote"),
+            ),
+        ]
+
+        for name, raw, expected in cases:
+            with self.subTest(name=name):
+                self.assertEqual(_parse_code(raw), expected)
+
+    def test_quote(self):
         raise NotImplementedError
     
     def test_ulist(self):

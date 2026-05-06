@@ -4,6 +4,17 @@ from domain.blocknode import BlockNode, BlockType, CodeBlock, HeadingBlock, List
 from domain.textnode import TextNode
 from markdown.inline_markdown import text_to_textnodes
 
+def extract_title(markdown: str) -> str:
+    block_lines = markdown_to_blocks(markdown = markdown)
+    error = Exception("Markdown does not start with an h1 heading. Failed to extract the title.")
+    if len(block_lines) == 0:
+       raise error
+    if block_to_block_type(block_lines[0]) != BlockType.HEADING:
+       raise error
+    heading = _parse_heading(block_lines[0])
+    if heading.level != 1:
+        raise error
+    return "".join([child.text for child in heading.children])
 
 def markdown_to_blocks(markdown: str) -> list[str]:
     blocks = [x.strip() for x in markdown.split("\n\n")]

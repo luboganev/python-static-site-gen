@@ -1,8 +1,34 @@
 import unittest
 
 from domain.textnode import TextNode, TextType
-from markdown.block_markdown import _parse_code, _parse_heading, _parse_list, _parse_paragraph, _parse_quote, _strip_list_marker, block_to_block_type, markdown_to_block_nodes, markdown_to_blocks
+from markdown.block_markdown import _parse_code, _parse_heading, _parse_list, _parse_paragraph, _parse_quote, _strip_list_marker, block_to_block_type, extract_title, markdown_to_block_nodes, markdown_to_blocks
 from domain.blocknode import BlockType, CodeBlock, HeadingBlock, ListBlock, ParagraphBlock, QuoteBlock
+
+class TestExtractTitle(unittest.TestCase):
+    def test_extract_valid_title(self):
+        self.assertEqual(extract_title("# valid title"), "valid title")       
+
+    def test_extract_invalid_title(self):
+        cases = [
+            (
+                "empty",
+                "",
+            ),
+            (
+                "not h1 header",
+                "## header 2",
+            ),
+            (
+                "non header first block",
+                "Some text\n\n# header 1",
+            ),
+        ]       
+
+        for name, raw in cases:
+            with self.subTest(name=name):
+                with self.assertRaises(Exception) as ctx:
+                    extract_title(raw)
+                self.assertIn("Markdown does not start with an h1 heading. Failed to extract the title.", str(ctx.exception))
 
 class TestMarkdownToBlock(unittest.TestCase):
     def test_markdown_to_blocks(self):

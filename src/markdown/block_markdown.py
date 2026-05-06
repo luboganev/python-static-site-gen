@@ -1,4 +1,6 @@
-from domain.blocknode import BlockNode, BlockType, CodeBlock, HeadingBlock, ListBlock, QuoteBlock
+import re
+
+from domain.blocknode import BlockNode, BlockType, CodeBlock, HeadingBlock, ListBlock, ParagraphBlock, QuoteBlock
 from domain.textnode import TextNode
 from markdown.inline_markdown import text_to_textnodes
 
@@ -43,6 +45,8 @@ def markdown_to_block_nodes(markdown: str) -> list[BlockNode]:
 
 def _build_block_node(raw: str, block_type: BlockType) -> BlockNode:
     match block_type:
+        case BlockType.PARAGRAPH:
+            return _parse_paragraph(text = raw)
         case BlockType.HEADING:
             return _parse_heading(text = raw)
         case BlockType.CODE:
@@ -50,9 +54,15 @@ def _build_block_node(raw: str, block_type: BlockType) -> BlockNode:
         case BlockType.QUOTE:
             return _parse_quote(text = raw)
         case BlockType.ULIST:
-            return _parse_list(text = raw)
+            return _parse_list(text = raw, ordered = False)
         case BlockType.OLIST:
-            return _parse_quote(text = raw, ordered = True)
+            return _parse_list(text = raw, ordered = True)
+        case _:
+            raise ValueError(f"Unknown block type: {block_type}")
+        
+def _parse_paragraph(text: str) -> ParagraphBlock:
+    flattened = " ".join(text.split("\n"))
+    return ParagraphBlock(children=text_to_textnodes(flattened))
         
 def _parse_heading(text: str) -> HeadingBlock:
     level = 0
@@ -83,5 +93,19 @@ def _parse_quote(text: str) -> QuoteBlock:
         final_text_nodes.extend(text_to_textnodes(text = line))
     return QuoteBlock(children = final_text_nodes)
 
-def _parse_list(text: str, ordered: bool = False) -> ListBlock:
-    raise NotImplementedError
+def _parse_list(text: str, ordered: bool) -> ListBlock:
+    items = []
+    for line in text.split("\n"):
+        stripped = _strip_list_marker(line, ordered)
+        if not stripped:
+            continue
+        items.append(text_to_textnodes(stripped))
+    return ListBlock(ordered=ordered, items=items)
+
+_ORDERED_PREFIX = re.compile(r"^\d+\. ?")
+
+def _strip_list_marker(line: str, ordered: bool) -> str:
+    if ordered:
+        return _ORDERED_PREFIX.sub("", line, count=1)
+    else:
+       return line.removeprefix("-").removeprefix(" ") 

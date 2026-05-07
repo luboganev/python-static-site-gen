@@ -1,17 +1,14 @@
 
 import os
-from shutil import rmtree, copy
-from os import path, mkdir, listdir
 import shutil
 
 from copystatic import copy_files_recursive
-from domain.textnode import TextNode
-from domain.textnode import TextType
-from html_render.generate_page import generate_page
+from html_render.generate_page import generate_pages_recursive
 
 dir_path_static = "./static"
 dir_path_public = "./public"
 dir_path_content = "./content"
+template_path = "./template.html"
 
 def main():
     print("Deleting public directory...")
@@ -21,10 +18,7 @@ def main():
     print("Copying static files to public directory...")
     copy_files_recursive(dir_path_static, dir_path_public)
 
-    generate_page(
-        from_path = os.path.join(dir_path_content, "index.md"),
-        template_path = "template.html",
-        dest_path = os.path.join(dir_path_public, "index.html")
-    )
+    print("Generating content to public directory...")
+    generate_pages_recursive(dir_path_content, template_path, dir_path_public)
 
 main()
